@@ -1,0 +1,36 @@
+{
+  "name": "retangle",
+  "private": true,
+  "version": "0.0.1",
+  "description": "React custom hook dependency visualizer",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:core": "npm run build -w packages/core",
+    "build:ui": "npm run build -w packages/ui",
+    "build:types": "npm run build -w packages/types",
+    "dev": "npm run dev -w packages/core",
+    "dev:ui": "npm run dev -w packages/ui",
+    "lint": "eslint packages/*/src --ext .ts,.tsx",
+    "typecheck": "tsc --build tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf packages/*/dist packages/*/.tsbuildinfo"
+  },
+  "devDependencies": {
+    "@babel/parser": "^7.29.0",
+    "@types/node": "^22.0.0",
+    "@types/prettier": "^2.7.3",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "^5.6.0",
+    "vitest": "^4.0.18"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
