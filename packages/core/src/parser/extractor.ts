@@ -61,7 +61,7 @@ export function extractFromFile(file: SourceFile): {
       components.push({
         name,
         filePath,
-        consumes: calledHooks.map((h) => h.name),
+        consumes: calledHooks,
       });
     }
   }
