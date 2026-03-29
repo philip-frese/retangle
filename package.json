@@ -11,7 +11,8 @@
     "build:core": "npm run build -w packages/core",
     "build:ui": "npm run build -w packages/ui",
     "build:types": "npm run build -w packages/types",
-    "dev": "npm run dev -w packages/core",
+    "dev": "npm run dev -w packages/core & npm run dev -w packages/ui",
+    "dev:core": "npm run dev -w packages/core",
     "dev:ui": "npm run dev -w packages/ui",
     "lint": "eslint packages/*/src --ext .ts,.tsx",
     "typecheck": "tsc --build tsconfig.build.json",
@@ -32,8 +33,5 @@
   },
   "engines": {
     "node": ">=20.0.0"
-  },
-  "dependencies": {
-    "uuid": "^13.0.0"
   }
 }
