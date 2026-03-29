@@ -29,6 +29,7 @@ export type GraphNode = {
 };
 
 export type GraphEdge = {
+  id: string;
   from: string;
   to: string;
   data: string[]; // Which data is exposed from a hook to a component

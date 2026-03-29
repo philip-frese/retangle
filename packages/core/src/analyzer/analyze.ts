@@ -85,6 +85,7 @@ function getGraphEdges(
       return Array.from(hooks.values()).map(
         (hook) =>
           ({
+            id: v4(),
             from: hook.id,
             to: originalNode.id,
             type: isComponent ? "consumes" : "depends-on",
