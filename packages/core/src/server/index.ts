@@ -11,14 +11,17 @@ export interface RetangleServer {
   watch: (watchPath: string, onUpdate: () => void) => void;
 }
 
-export function createRetangleServer(port: number = 7777): RetangleServer {
+export function createRetangleServer(
+  port: number = 7777,
+  uiDistPath?: string,
+): RetangleServer {
   const app = express();
   const httpServer = createServer(app);
   const { broadcast } = createWsServer(httpServer);
 
   let currentGraph: Graph = { nodes: [], edges: [] };
 
-  registerRoutes(app, () => currentGraph);
+  registerRoutes(app, () => currentGraph, uiDistPath);
 
   return {
     start: () => {
