@@ -1,8 +1,4 @@
-export type HookDefinition = {
-  name: string;
-  filePath: string;
-  dependencies: HookDependency[];
-};
+import { SimulationLinkDatum, SimulationNodeDatum } from "d3";
 
 export type HookDependency = {
   name: string;
@@ -10,10 +6,18 @@ export type HookDependency = {
   filePath?: string; // undefined for builtins
 };
 
+export type HookDefinition = {
+  name: string;
+  filePath: string;
+  dependencies: HookDependency[];
+  builtinDependencies: string[];
+};
+
 export type ComponentDefinition = {
   name: string;
   filePath: string;
   consumes: HookDependency[];
+  builtinConsumes: string[];
 };
 
 export type ParseResult = {
@@ -26,6 +30,7 @@ export type GraphNode = {
   name: string;
   filePath: string;
   type: "hook" | "component";
+  builtinHooksCalled: string[];
 } & SimulationNodeDatum;
 
 export type GraphEdge = {
