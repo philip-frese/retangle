@@ -54,14 +54,24 @@ export function extractFromFile(file: SourceFile): {
     if (!name) continue;
 
     const calledHooks = getCalledHooks(fn);
+    const builtins = calledHooks
+      .filter((hook) => hook.type === "builtin")
+      .map(({ name }) => name);
+    const customs = calledHooks.filter(({ type }) => type !== "builtin");
 
     if (name.startsWith("use")) {
-      hooks.push({ name, filePath, dependencies: calledHooks });
+      hooks.push({
+        name,
+        filePath,
+        dependencies: customs,
+        builtinDependencies: builtins,
+      });
     } else if (/^[A-Z]/.test(name) && calledHooks.length > 0) {
       components.push({
         name,
         filePath,
-        consumes: calledHooks,
+        consumes: customs,
+        builtinConsumes: builtins,
       });
     }
   }
