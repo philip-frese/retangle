@@ -1,7 +1,7 @@
 import type { RetangleConfig } from "../config/schema.js";
 import { buildProject } from "../parser/project.js";
 import { extractFromFile } from "../parser/extractor.js";
-import { resolveCustomHooks } from "../parser/resolver.js";
+import { resolveParseResult } from "../parser/resolver.js";
 import { analyzeHooks } from "../analyzer/analyze.js";
 import type { Graph, ParseResult } from "@retangle/types";
 
@@ -16,9 +16,12 @@ export async function runAnalysis(config: RetangleConfig): Promise<Graph> {
     parseResult.components.push(...components);
   }
 
-  parseResult.hooks = resolveCustomHooks(parseResult.hooks, project);
+  const resolvedParsedResult: ParseResult = resolveParseResult(
+    parseResult,
+    project,
+  );
 
-  const { graphNodes, graphEdges } = analyzeHooks(parseResult);
+  const { graphNodes, graphEdges } = analyzeHooks(resolvedParsedResult);
 
   return { nodes: graphNodes, edges: graphEdges };
 }
