@@ -26,7 +26,7 @@ export type GraphNode = {
   name: string;
   filePath: string;
   type: "hook" | "component";
-};
+} & SimulationNodeDatum;
 
 export type GraphEdge = {
   id: string;
@@ -34,7 +34,7 @@ export type GraphEdge = {
   to: string;
   data: string[]; // Which data is exposed from a hook to a component
   type: "depends-on" | "consumes";
-};
+} & SimulationLinkDatum<GraphNode>;
 
 export type Graph = {
   nodes: GraphNode[];
