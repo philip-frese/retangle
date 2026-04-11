@@ -18,12 +18,14 @@ export function analyzeHooks(parseResult: ParseResult): {
       name: component.name,
       filePath: component.filePath,
       type: "component",
+      builtinHooksCalled: component.builtinConsumes,
     })) as GraphNode[]),
     ...(parseResult.hooks.map((hook) => ({
       id: v4(),
       name: hook.name,
       filePath: hook.filePath,
       type: "hook",
+      builtinHooksCalled: hook.builtinDependencies,
     })) as GraphNode[]),
   ];
 
@@ -36,19 +38,13 @@ function getGraphNodes(
 ) {
   const nodes: GraphNode[] = hookDependencies
     .map(({ type, name, filePath }: HookDependency) => {
-      return type === "builtin"
-        ? ({
-            id: name,
-            name: name,
-            filePath: "builtin",
-            type: "hook",
-          } as GraphNode)
-        : graphNodes.find(
-            (node) =>
-              node.type === "hook" &&
-              node.filePath === filePath &&
-              node.name === name,
-          );
+      if (type === "builtin") return;
+      return graphNodes.find(
+        (node) =>
+          node.type === "hook" &&
+          node.filePath === filePath &&
+          node.name === name,
+      );
     })
     .filter((node) => !!node);
 
@@ -75,19 +71,21 @@ function getGraphEdges(
 
       if (!originalNode) return;
 
-      const hooks = getGraphNodes(
+      const hookNodes = getGraphNodes(
         isComponent
           ? (parseResult as ComponentDefinition).consumes
           : (parseResult as HookDefinition).dependencies,
         graphNodes,
       );
 
-      return Array.from(hooks.values()).map(
-        (hook) =>
+      return Array.from(hookNodes.values()).map(
+        (node) =>
           ({
             id: v4(),
-            from: hook.id,
-            to: originalNode.id,
+            from: originalNode.id,
+            to: node.id,
+            source: node.id,
+            target: originalNode.id,
             type: isComponent ? "consumes" : "depends-on",
             data: [],
           }) as GraphEdge,
