@@ -13,7 +13,7 @@ export function registerRoutes(
 
   if (uiDistPath) {
     app.use(express.static(uiDistPath));
-    app.get("*", (_req, res) => {
+    app.get("/{*path}", (_req, res) => {
       res.sendFile(path.join(uiDistPath, "index.html"));
     });
   }
