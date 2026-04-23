@@ -42,6 +42,7 @@ export type GraphEdge = {
 } & SimulationLinkDatum<GraphNode>;
 
 export type Graph = {
-  nodes: GraphNode[];
+  componentNodes: GraphNode[];
+  hookNodes: GraphNode[];
   edges: GraphEdge[];
 };
