@@ -19,7 +19,7 @@ export function createRetangleServer(
   const httpServer = createServer(app);
   const { broadcast } = createWsServer(httpServer);
 
-  let currentGraph: Graph = { nodes: [], edges: [] };
+  let currentGraph: Graph = { componentNodes: [], hookNodes: [], edges: [] };
 
   registerRoutes(app, () => currentGraph, uiDistPath);
 
