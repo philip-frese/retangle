@@ -21,7 +21,8 @@ export async function runAnalysis(config: RetangleConfig): Promise<Graph> {
     project,
   );
 
-  const { graphNodes, graphEdges } = analyzeHooks(resolvedParsedResult);
+  const { componentNodes, hookNodes, graphEdges } =
+    analyzeHooks(resolvedParsedResult);
 
-  return { nodes: graphNodes, edges: graphEdges };
+  return { componentNodes, hookNodes, edges: graphEdges };
 }
