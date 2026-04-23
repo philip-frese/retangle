@@ -9,27 +9,33 @@ import {
 import { v4 } from "uuid";
 
 export function analyzeHooks(parseResult: ParseResult): {
-  graphNodes: GraphNode[];
+  hookNodes: GraphNode[];
+  componentNodes: GraphNode[];
   graphEdges: GraphEdge[];
 } {
-  const graphNodes: GraphNode[] = [
-    ...(parseResult.components.map((component) => ({
+  const componentNodes: GraphNode[] = parseResult.components.map(
+    (component) => ({
       id: v4(),
       name: component.name,
       filePath: component.filePath,
       type: "component",
       builtinHooksCalled: component.builtinConsumes,
-    })) as GraphNode[]),
-    ...(parseResult.hooks.map((hook) => ({
-      id: v4(),
-      name: hook.name,
-      filePath: hook.filePath,
-      type: "hook",
-      builtinHooksCalled: hook.builtinDependencies,
-    })) as GraphNode[]),
-  ];
+    }),
+  );
 
-  return { graphNodes, graphEdges: getGraphEdges(graphNodes, parseResult) };
+  const hookNodes: GraphNode[] = parseResult.hooks.map((hook) => ({
+    id: v4(),
+    name: hook.name,
+    filePath: hook.filePath,
+    type: "hook",
+    builtinHooksCalled: hook.builtinDependencies,
+  }));
+
+  return {
+    hookNodes,
+    componentNodes,
+    graphEdges: getGraphEdges([...componentNodes, ...hookNodes], parseResult),
+  };
 }
 
 function getGraphNodes(
