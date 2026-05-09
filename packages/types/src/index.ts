@@ -46,3 +46,12 @@ export type Graph = {
   hookNodes: GraphNode[];
   edges: GraphEdge[];
 };
+
+export type RetangleProjectMeta = {
+  name: string | undefined;
+};
+
+export type RetangleServerOptions = {
+  uiDistPath: string;
+  meta: RetangleProjectMeta;
+};
