@@ -13,6 +13,7 @@ const App = () => {
     setHiddenHookNodes,
     selectedNode,
     setSelectedNode,
+    meta,
   } = useContext(GraphContext);
 
   if (!graph) return null;
@@ -28,6 +29,7 @@ const App = () => {
           setHiddenHookNodes={setHiddenHookNodes}
           selectedNode={selectedNode}
           setSelectedNode={setSelectedNode}
+          projectMeta={meta}
         />
       </div>
       <div className="w-full m-0 bg-zinc-800">
