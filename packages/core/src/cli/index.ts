@@ -5,6 +5,17 @@ import { runAnalysis } from "./dev.js";
 import type { RetangleConfig } from "../config/schema.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFileSync } from "node:fs";
+import { RetangleServerOptions } from "@retangle/types";
+
+const getProjectName = (path: string): string | undefined => {
+  try {
+    return JSON.parse(readFileSync(path, "utf-8")).name ?? undefined;
+  } catch (error) {
+    console.error(`Error reading package.json from path: ${path}`, error);
+    return undefined;
+  }
+};
 
 program
   .name("retangle")
@@ -29,7 +40,18 @@ program
       exclude: opts.exclude ?? fileConfig.exclude ?? [],
     };
 
-    const server = createRetangleServer(Number(opts.port), uiDistPath);
+    const packagePath = path.resolve(config.projectPath, "package.json");
+
+    const projectName: string | undefined = getProjectName(packagePath);
+
+    const serverOptions: RetangleServerOptions = {
+      uiDistPath: uiDistPath,
+      meta: {
+        name: projectName,
+      },
+    };
+
+    const server = createRetangleServer(Number(opts.port), serverOptions);
     server.start();
 
     const graph = await runAnalysis(config);
