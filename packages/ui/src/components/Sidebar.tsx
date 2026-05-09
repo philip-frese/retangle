@@ -1,4 +1,4 @@
-import { Graph, GraphNode } from "@retangle/types";
+import { Graph, GraphNode, RetangleProjectMeta } from "@retangle/types";
 import Collapsable from "./Collapsable";
 import { memo, useCallback } from "react";
 
@@ -10,6 +10,7 @@ type SidebarProps = {
   setHiddenComponentNodes: (nodes: GraphNode[]) => void;
   selectedNode: GraphNode | null;
   setSelectedNode: (node: GraphNode | null) => void;
+  projectMeta: RetangleProjectMeta | null;
 };
 
 type NodeItemProps = {
@@ -78,12 +79,7 @@ const EyeButton = memo(
 );
 
 const NodeItem = memo(
-  ({
-    node,
-    isHidden,
-    setIsHidden,
-    onToggleSelected,
-  }: NodeItemProps) => {
+  ({ node, isHidden, setIsHidden, onToggleSelected }: NodeItemProps) => {
     const handleToggleSelected = useCallback(
       () => onToggleSelected(node),
       [onToggleSelected, node],
@@ -120,11 +116,14 @@ const Sidebar = ({
   setHiddenHookNodes,
   selectedNode,
   setSelectedNode,
+  projectMeta,
 }: SidebarProps) => {
   const toggleComponent = useCallback(
     (node: GraphNode) => {
       if (hiddenComponentNodes.some(({ id }) => id === node.id)) {
-        setHiddenComponentNodes(hiddenComponentNodes.filter(({ id }) => id !== node.id));
+        setHiddenComponentNodes(
+          hiddenComponentNodes.filter(({ id }) => id !== node.id),
+        );
       } else {
         setHiddenComponentNodes([...hiddenComponentNodes, node]);
       }
@@ -144,7 +143,8 @@ const Sidebar = ({
   );
 
   const toggleSelectedNode = useCallback(
-    (node: GraphNode) => setSelectedNode(selectedNode?.id === node.id ? null : node),
+    (node: GraphNode) =>
+      setSelectedNode(selectedNode?.id === node.id ? null : node),
     [selectedNode, setSelectedNode],
   );
 
@@ -167,10 +167,10 @@ const Sidebar = ({
   return (
     <div className="bg-zinc-900 border-r border-solid border-zinc-900 h-full text-zinc-50 py-4 px-2 flex flex-col gap-4">
       <div className="flex flex-col gap-3 text-center mb-10">
-        <div className="w-full h-12 bg-white rounded-full text-black p-2">
-          Logo
+        <div className="w-full h-12 bg-linear-to-bl from-violet-500 to-fuchsia-500 rounded-full flex items-center text-white p-2">
+          Retangle
         </div>
-        Project: Test
+        {projectMeta && <span>Project: {projectMeta.name}</span>}
       </div>
       <Collapsable
         title={
@@ -190,7 +190,9 @@ const Sidebar = ({
               key={component.id}
               node={component}
               onToggleSelected={toggleSelectedNode}
-              isHidden={hiddenComponentNodes.some(({ id }) => id === component.id)}
+              isHidden={hiddenComponentNodes.some(
+                ({ id }) => id === component.id,
+              )}
               setIsHidden={toggleComponent}
             />
           ))}
