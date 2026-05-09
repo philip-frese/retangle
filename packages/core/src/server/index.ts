@@ -1,6 +1,6 @@
 import express from "express";
 import { createServer } from "node:http";
-import type { Graph } from "@retangle/types";
+import type { Graph, RetangleServerOptions } from "@retangle/types";
 import { registerRoutes } from "./routes.js";
 import { createWsServer } from "./ws.js";
 import { createWatcher } from "./watcher.js";
@@ -13,15 +13,14 @@ export interface RetangleServer {
 
 export function createRetangleServer(
   port: number = 7777,
-  uiDistPath?: string,
+  options: RetangleServerOptions,
 ): RetangleServer {
   const app = express();
   const httpServer = createServer(app);
   const { broadcast } = createWsServer(httpServer);
-
   let currentGraph: Graph = { componentNodes: [], hookNodes: [], edges: [] };
 
-  registerRoutes(app, () => currentGraph, uiDistPath);
+  registerRoutes(app, () => currentGraph, options);
 
   return {
     start: () => {
