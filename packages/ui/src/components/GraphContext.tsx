@@ -1,4 +1,4 @@
-import { Graph, GraphNode } from "@retangle/types";
+import { Graph, GraphNode, RetangleProjectMeta } from "@retangle/types";
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { SimNode } from "./Graph";
 
@@ -11,6 +11,7 @@ type GraphContextType = {
   setSelectedNode: (node: GraphNode | SimNode | null) => void;
   graph: Graph | null;
   setGraph: (graph: Graph) => void;
+  meta: RetangleProjectMeta | null;
 };
 
 export const GraphContext = createContext<GraphContextType>({
@@ -22,6 +23,7 @@ export const GraphContext = createContext<GraphContextType>({
   setSelectedNode: () => {},
   graph: null,
   setGraph: () => {},
+  meta: null,
 });
 
 const GraphContextProvider = ({ children }: { children: ReactNode }) => {
@@ -33,14 +35,24 @@ const GraphContextProvider = ({ children }: { children: ReactNode }) => {
     null,
   );
   const [graph, setGraph] = useState<Graph | null>(null);
+  const [meta, setMeta] = useState<RetangleProjectMeta | null>(null);
 
   useEffect(() => {
     const getGraph = async () => {
       const res = await fetch("/api/graph");
-      const body = await res.json();
-      setGraph(body);
+      const graph = await res.json();
+      setGraph(graph);
     };
     getGraph();
+  }, []);
+
+  useEffect(() => {
+    const getMeta = async () => {
+      const res = await fetch("/api/project");
+      const meta = await res.json();
+      setMeta(meta);
+    };
+    getMeta();
   }, []);
 
   useEffect(() => {
@@ -65,6 +77,7 @@ const GraphContextProvider = ({ children }: { children: ReactNode }) => {
         setSelectedNode,
         graph,
         setGraph,
+        meta,
       }}
     >
       {children}
