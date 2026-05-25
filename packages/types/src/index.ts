@@ -1,23 +1,46 @@
 import { SimulationLinkDatum, SimulationNodeDatum } from "d3";
 
-export type HookDependency = {
+export type HookProperty = {
   name: string;
-  type: "builtin" | "custom";
-  filePath?: string; // undefined for builtins
+  type: string;
+};
+
+export const BUILTIN_HOOKS = [
+  "useState",
+  "useEffect",
+  "useRef",
+  "useMemo",
+  "useCallback",
+  "useContext",
+  "useReducer",
+  "useLayoutEffect",
+  "useId",
+  "useTransition",
+  "useDeferredValue",
+  "useImperativeHandle",
+] as const;
+
+export type BuiltinHookDependency = (typeof BUILTIN_HOOKS)[number];
+
+export type CustomHookDependency = {
+  name: string;
+  consumedProperties: HookProperty[];
+  filePath: string;
 };
 
 export type HookDefinition = {
   name: string;
   filePath: string;
-  dependencies: HookDependency[];
-  builtinDependencies: string[];
+  dependencies: CustomHookDependency[];
+  builtinDependencies: BuiltinHookDependency[];
+  exposedProperties: HookProperty[];
 };
 
 export type ComponentDefinition = {
   name: string;
   filePath: string;
-  consumes: HookDependency[];
-  builtinConsumes: string[];
+  consumes: CustomHookDependency[];
+  builtinConsumes: BuiltinHookDependency[];
 };
 
 export type ParseResult = {
