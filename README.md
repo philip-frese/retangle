@@ -7,42 +7,64 @@
 ## Features
 
 - 🔍 **Static analysis** — no runtime instrumentation, works on any React + TypeScript codebase
-- 🧶 **Hook dependency graph** — see which hooks call which, and what data flows where
-- ⚡ **React Query aware** — `useQuery` and `useMutation` hooks are highlighted with their query keys
-- 🔄 **Watch mode** — re-analyzes on file save
-- 📦 **Zero config** — points at a directory, works
+- 🧶 **Hook dependency graph** — see which hooks call which, and what data flows between them
+- 🏷️ **Property-level tracking** — edges show exactly which properties are consumed from each hook
+- 🔄 **Watch mode** — re-analyzes on file save and pushes updates to the UI via WebSocket
+- 📦 **Zero config** — point at a directory and it works; optional `retangle.config.ts` for fine-grained control
+- 🎛️ **Interactive UI** — drag nodes freely, hide/show individual hooks and components, click any node for details
 
 ## Usage
 
 ```bash
-# One-off analysis (opens browser automatically)
-npx retangle ./my-react-app
+# Run against a project
+node packages/core/dist/cli/index.js --project ./my-react-app
 
-# Watch mode
-npx retangle ./my-react-app --watch
+# With explicit tsconfig and glob filters
+node packages/core/dist/cli/index.js \
+  --project ./my-react-app \
+  --tsconfig ./my-react-app/tsconfig.json \
+  --include "**/*.ts" "**/*.tsx" \
+  --exclude "**/*.test.ts"
 
-# Custom port
-npx retangle ./my-react-app --port 3333
+# Custom port (default: 7777)
+node packages/core/dist/cli/index.js --project ./my-react-app --port 3333
 ```
 
-## Node types
+Then open `http://localhost:7777` in your browser.
 
-| Color  | Type       | Description                          |
-|--------|------------|--------------------------------------|
-| 🔵 Blue  | Component  | React component                      |
-| 🟣 Violet | Custom Hook | User-defined `useXxx` hook          |
-| 🟠 Orange | Query Hook | `useQuery`, `useInfiniteQuery`       |
-| 🩷 Pink  | Mutation   | `useMutation`                        |
-| ⚫ Gray  | Built-in   | `useState`, `useEffect`, etc.        |
+## Config file
+
+Create a `retangle.config.ts` in your project root to avoid passing flags every time:
+
+```ts
+import { defineConfig } from "retangle";
+
+export default defineConfig({
+  projectPath: "./",
+  tsConfigFilePath: "tsconfig.json",
+  include: ["src/**/*.ts", "src/**/*.tsx"],
+  exclude: ["**/*.test.ts", "**/*.spec.tsx"],
+});
+```
 
 ## How it works
 
 retangle uses the **TypeScript Compiler API** (via [ts-morph](https://ts-morph.com)) to walk your source files and build a dependency graph:
 
-1. **Parser** — finds all function declarations and arrow functions, detects hook calls via AST traversal
-2. **Graph builder** — maps caller → callee relationships and tracks which return bindings are consumed
-3. **Server** — bundles the UI and serves it locally with the graph as a JSON API endpoint
-4. **UI** — React Flow canvas with a detail sidebar
+1. **Extractor** — finds all hooks and components via AST traversal, extracts consumed properties (destructured from hook calls) and exposed properties (returned from hooks)
+2. **Resolver** — uses the TypeScript language service to resolve each custom hook dependency to its actual definition file, correctly handling re-exports and barrel files
+3. **Analyzer** — builds graph nodes and edges; edge `data` carries the consumed properties between two nodes
+4. **Server** — serves the UI statically and exposes the graph via `GET /api/graph`; pushes live updates via WebSocket on file change
+5. **UI** — D3 force-directed graph with a sidebar for filtering and a detail card per node
+
+## Node types
+
+| Type | Description |
+|---|---|
+| Component | React component (uppercase function that calls at least one hook) |
+| Hook | User-defined `useXxx` hook |
+
+Built-in hooks (`useState`, `useEffect`, etc.) are not rendered as graph nodes — they are stored as metadata on each node and visible in the detail view.
 
 ## Development
 
@@ -54,18 +76,20 @@ npm run build
 ```
 
 For UI development with hot reload:
-```bash
-# Terminal 1: run the CLI against a test project
-node packages/cli/dist/cli.js ./test-fixture --no-open
 
-# Terminal 2: start Vite dev server (proxies /api to the CLI)
-npm run dev -w packages/ui
+```bash
+# Terminal 1: run the CLI against the test fixture
+node packages/core/dist/cli/index.js --project ./test --tsconfig ./test/tsconfig.json --include "**/*.ts" "**/*.tsx"
+
+# Terminal 2: start Vite dev server (proxies /api and /ws to the CLI server)
+npm run dev:ui
 ```
+
+Then open `http://localhost:5173`.
 
 ## Roadmap
 
-- [ ] Cross-file hook resolution (currently tracks within-file only)
-- [ ] Filter panel (show only hooks consumed by a specific component)
-- [ ] Export to SVG / PNG
-- [ ] Support for `.js`/`.jsx` projects via Babel fallback
+- [ ] npm publish (`retangle` CLI installable via `npx`)
+- [ ] Export graph to SVG / PNG
+- [ ] Support for `.js` / `.jsx` projects
 - [ ] VS Code extension
