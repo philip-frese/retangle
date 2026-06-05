@@ -1,23 +1,46 @@
 import { SimulationLinkDatum, SimulationNodeDatum } from "d3";
 
-export type HookDependency = {
+export type HookProperty = {
   name: string;
-  type: "builtin" | "custom";
-  filePath?: string; // undefined for builtins
+  type: string;
+};
+
+export const BUILTIN_HOOKS = [
+  "useState",
+  "useEffect",
+  "useRef",
+  "useMemo",
+  "useCallback",
+  "useContext",
+  "useReducer",
+  "useLayoutEffect",
+  "useId",
+  "useTransition",
+  "useDeferredValue",
+  "useImperativeHandle",
+] as const;
+
+export type BuiltinHookDependency = (typeof BUILTIN_HOOKS)[number];
+
+export type CustomHookDependency = {
+  name: string;
+  consumedProperties: HookProperty[];
+  filePath: string;
 };
 
 export type HookDefinition = {
   name: string;
   filePath: string;
-  dependencies: HookDependency[];
-  builtinDependencies: string[];
+  dependencies: CustomHookDependency[];
+  builtinDependencies: BuiltinHookDependency[];
+  exposedProperties: HookProperty[];
 };
 
 export type ComponentDefinition = {
   name: string;
   filePath: string;
-  consumes: HookDependency[];
-  builtinConsumes: string[];
+  consumes: CustomHookDependency[];
+  builtinConsumes: BuiltinHookDependency[];
 };
 
 export type ParseResult = {
@@ -31,13 +54,14 @@ export type GraphNode = {
   filePath: string;
   type: "hook" | "component";
   builtinHooksCalled: string[];
+  exposedProperties: HookProperty[];
 } & SimulationNodeDatum;
 
 export type GraphEdge = {
   id: string;
   from: string;
   to: string;
-  data: string[]; // Which data is exposed from a hook to a component
+  data: HookProperty[]; // Which data is exposed from a hook to a component
   type: "depends-on" | "consumes";
 } & SimulationLinkDatum<GraphNode>;
 

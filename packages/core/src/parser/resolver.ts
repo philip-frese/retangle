@@ -1,14 +1,12 @@
 import { Node, Project, SyntaxKind } from "ts-morph";
-import type { HookDependency, ParseResult } from "@retangle/types";
+import type { CustomHookDependency, ParseResult } from "@retangle/types";
 
 function resolveHooks(
   sourceFilePath: string,
-  hookDependecies: HookDependency[],
+  hookDependecies: CustomHookDependency[],
   project: Project,
 ) {
   return hookDependecies.map((dep) => {
-    if (dep.type !== "custom") return dep;
-
     const sourceFile = project.getSourceFile(sourceFilePath);
     if (!sourceFile) return dep;
 

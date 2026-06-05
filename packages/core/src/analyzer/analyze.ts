@@ -1,11 +1,4 @@
-import {
-  ComponentDefinition,
-  GraphEdge,
-  GraphNode,
-  HookDefinition,
-  HookDependency,
-  ParseResult,
-} from "@retangle/types";
+import { GraphEdge, GraphNode, ParseResult } from "@retangle/types";
 import { v4 } from "uuid";
 
 export function analyzeHooks(parseResult: ParseResult): {
@@ -20,6 +13,7 @@ export function analyzeHooks(parseResult: ParseResult): {
       filePath: component.filePath,
       type: "component",
       builtinHooksCalled: component.builtinConsumes,
+      exposedProperties: [],
     }),
   );
 
@@ -29,6 +23,7 @@ export function analyzeHooks(parseResult: ParseResult): {
     filePath: hook.filePath,
     type: "hook",
     builtinHooksCalled: hook.builtinDependencies,
+    exposedProperties: hook.exposedProperties,
   }));
 
   return {
@@ -38,64 +33,69 @@ export function analyzeHooks(parseResult: ParseResult): {
   };
 }
 
-function getGraphNodes(
-  hookDependencies: HookDependency[],
-  graphNodes: GraphNode[],
-) {
-  const nodes: GraphNode[] = hookDependencies
-    .map(({ type, name, filePath }: HookDependency) => {
-      if (type === "builtin") return;
-      return graphNodes.find(
-        (node) =>
-          node.type === "hook" &&
-          node.filePath === filePath &&
-          node.name === name,
-      );
-    })
-    .filter((node) => !!node);
-
-  return Array.from(
-    new Map<string, GraphNode>(nodes.map((node) => [node.id, node])).values(),
-  );
-}
-
 function getGraphEdges(
   graphNodes: GraphNode[],
   parseResult: ParseResult,
 ): GraphEdge[] {
-  return [...parseResult.components, ...parseResult.hooks]
-    .flatMap((parseResult) => {
-      const isComponent =
-        typeof parseResult === "object" && "consumes" in parseResult;
-      const originalNode = graphNodes.find(
-        (node) =>
-          ((node.type === "component" && isComponent) ||
-            (node.type === "hook" && !isComponent)) &&
-          node.filePath === parseResult.filePath &&
-          node.name === parseResult.name,
-      );
+  const edges: GraphEdge[] = [];
 
-      if (!originalNode) return;
+  for (const component of parseResult.components) {
+    const originalNode = graphNodes.find(
+      (n) =>
+        n.type === "component" &&
+        n.filePath === component.filePath &&
+        n.name === component.name,
+    );
+    if (!originalNode) continue;
 
-      const hookNodes = getGraphNodes(
-        isComponent
-          ? (parseResult as ComponentDefinition).consumes
-          : (parseResult as HookDefinition).dependencies,
-        graphNodes,
+    for (const dep of component.consumes) {
+      const hookNode = graphNodes.find(
+        (n) =>
+          n.type === "hook" &&
+          n.filePath === dep.filePath &&
+          n.name === dep.name,
       );
+      if (!hookNode) continue;
+      edges.push({
+        id: v4(),
+        from: hookNode.id,
+        to: originalNode.id,
+        source: hookNode.id,
+        target: originalNode.id,
+        type: "consumes",
+        data: dep.consumedProperties,
+      });
+    }
+  }
 
-      return Array.from(hookNodes.values()).map(
-        (node) =>
-          ({
-            id: v4(),
-            from: originalNode.id,
-            to: node.id,
-            source: node.id,
-            target: originalNode.id,
-            type: isComponent ? "consumes" : "depends-on",
-            data: [],
-          }) as GraphEdge,
+  for (const hook of parseResult.hooks) {
+    const originalNode = graphNodes.find(
+      (n) =>
+        n.type === "hook" &&
+        n.filePath === hook.filePath &&
+        n.name === hook.name,
+    );
+    if (!originalNode) continue;
+
+    for (const dep of hook.dependencies) {
+      const hookNode = graphNodes.find(
+        (n) =>
+          n.type === "hook" &&
+          n.filePath === dep.filePath &&
+          n.name === dep.name,
       );
-    })
-    .filter((edge) => !!edge);
+      if (!hookNode) continue;
+      edges.push({
+        id: v4(),
+        from: hookNode.id,
+        to: originalNode.id,
+        source: hookNode.id,
+        target: originalNode.id,
+        type: "depends-on",
+        data: dep.consumedProperties,
+      });
+    }
+  }
+
+  return edges;
 }
