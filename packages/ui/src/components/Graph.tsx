@@ -102,6 +102,20 @@ const Graph = ({
     const svg = select(svgRef.current);
     svg.selectAll("*").remove();
 
+    svg
+      .append("defs")
+      .append("marker")
+      .attr("id", "arrowhead")
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 18)
+      .attr("refY", 0)
+      .attr("markerWidth", 3)
+      .attr("markerHeight", 3)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M0,-5L10,0L0,5")
+      .attr("fill", "#999");
+
     const link = svg
       .append("g")
       .attr("stroke", "#999")
@@ -109,7 +123,37 @@ const Graph = ({
       .selectAll("line")
       .data(links)
       .join("line")
-      .attr("stroke-width", "3px");
+      .attr("stroke-width", "3px")
+      .attr("marker-end", "url(#arrowhead)");
+
+    const linkLabelGroup = svg
+      .append("g")
+      .attr("pointer-events", "none")
+      .selectAll<SVGTextElement, SimLink>("g")
+      .data(links.filter(({ data }) => data.length > 0))
+      .join("g");
+
+    linkLabelGroup
+      .append("text")
+      .text((edge) => edge.data.map((property) => property.name).join(", "))
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr("fill", "white")
+      .attr("font-size", "10px");
+
+    linkLabelGroup.each(function () {
+      const g = select(this);
+      const text = g.select<SVGTextElement>("text").node()!;
+      const bbox = text.getBBox();
+      g.insert("rect", "text")
+        .attr("x", bbox.x - 4)
+        .attr("y", bbox.y - 2)
+        .attr("width", bbox.width + 8)
+        .attr("height", bbox.height + 4)
+        .attr("fill", "#999")
+        .attr("opacity", 0.8)
+        .attr("rx", 3);
+    });
 
     const nodeGroup = svg.append("g");
 
@@ -194,8 +238,17 @@ const Graph = ({
         .attr("y1", (d) => (d.source as SimNode).y ?? 0)
         .attr("x2", (d) => (d.target as SimNode).x ?? 0)
         .attr("y2", (d) => (d.target as SimNode).y ?? 0);
-
       node.attr("cx", (d) => d.x ?? 0).attr("cy", (d) => d.y ?? 0);
+      linkLabelGroup.attr("transform", (d) => {
+        const sx = (d.source as SimNode).x ?? 0;
+        const tx = (d.target as SimNode).x ?? 0;
+        const sy = (d.source as SimNode).y ?? 0;
+        const ty = (d.target as SimNode).y ?? 0;
+        const len = Math.hypot(tx - sx, ty - sy) || 1;
+        const x = (sx + tx) / 2 + (-(ty - sy) / len) * 12;
+        const y = (sy + ty) / 2 + ((tx - sx) / len) * 12;
+        return `translate(${x}, ${y})`;
+      });
       labelGroup.attr(
         "transform",
         (d) => `translate(${d.x ?? 0}, ${d.y ?? 0})`,
