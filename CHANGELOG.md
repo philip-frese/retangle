@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/philip-frese/retangle/compare/v1.0.0...v1.1.0) (2026-06-05)
+
+
+### Features
+
+* extract exported hook properties and display in detail view and on graph edges  ([1af72be](https://github.com/philip-frese/retangle/commit/1af72be6dc5c17e562cf55ec9de54432c5464ad1))
+
 # 1.0.0 (2026-05-31)
 
 
