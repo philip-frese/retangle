@@ -54,6 +54,7 @@ export type GraphNode = {
   filePath: string;
   type: "hook" | "component";
   builtinHooksCalled: string[];
+  exposedProperties: HookProperty[];
 } & SimulationNodeDatum;
 
 export type GraphEdge = {
