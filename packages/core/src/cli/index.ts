@@ -32,11 +32,14 @@ program
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const uiDistPath = path.resolve(__dirname, "../../../ui/dist");
 
+    const projectPath = opts.project ?? fileConfig.projectPath ?? process.cwd();
     const config: RetangleConfig = {
-      projectPath: opts.project ?? fileConfig.projectPath ?? process.cwd(),
+      projectPath,
       tsConfigFilePath:
-        opts.tsconfig ?? fileConfig.tsConfigFilePath ?? "tsconfig.json",
-      include: opts.include ?? fileConfig.include ?? [],
+        opts.tsconfig ??
+        fileConfig.tsConfigFilePath ??
+        path.resolve(projectPath, "tsconfig.json"),
+      include: opts.include ?? fileConfig.include ?? ["**/*.ts", "**/*.tsx"],
       exclude: opts.exclude ?? fileConfig.exclude ?? [],
     };
 
