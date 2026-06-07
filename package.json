@@ -11,7 +11,7 @@
     "build:core": "npm run build -w packages/core",
     "build:ui": "npm run build -w packages/ui",
     "build:types": "npm run build -w packages/types",
-    "dev": "npm run dev -w packages/core & npm run dev -w packages/ui",
+    "dev": "npm run build:core && (npm run dev:core & node --watch packages/core/dist/cli/index.js --project ${npm_config_project:-./test} & npm run dev:ui)",
     "dev:core": "npm run dev -w packages/core",
     "dev:ui": "npm run dev -w packages/ui",
     "lint": "eslint packages/*/src --ext .ts,.tsx",
